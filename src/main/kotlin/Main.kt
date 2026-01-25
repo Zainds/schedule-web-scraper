@@ -28,37 +28,58 @@ fun fetchPage(url: String): String? {
         }
     }
 }
-
 fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
+    val resultList = mutableListOf<Lesson>()
 
-    val elements = doc.select("div.list-group-item")
-    return elements.mapNotNull { element ->
+    val dayBlocks = doc.select("div.block-index")
 
-        val nameEl = element.selectFirst("strong")
-        val dateText = element.text().slice(0..11)
-        val timeText = element.selectFirst("strong")
-        val cabinetText = element.selectFirst("strong")
-        val teacherText = element.selectFirst("strong")
-        val formatText = element.text().slice(12..11)
-        val nameText = nameEl?.text()?.trim()
+    for (dayBlock in dayBlocks) {
+        lateinit var cabinet: String
+        lateinit var teacher: String
 
-        if (!nameText.isNullOrEmpty()) {
-            Lesson(
-                date = dateText,
-                name = nameText,
-                time = nameText,
-                cabinet = nameText,
-                teacher = nameText,
-                format = nameText
+        val dateText = dayBlock.selectFirst("h2")?.text()?.slice(0..7) ?: "-"
+
+        val lessonElements = dayBlock.select("div.list-group-item")
+
+        for (element in lessonElements) {
+            val name = element.selectFirst("strong")?.text() ?: "-"
+
+            val fullText = element.text()
+            val time = fullText.slice(0..11)
+
+            // Формат: ищем текст в скобках (л.), (пр.), (экз.) и т.д.
+            // Логика: ищем текст в скобках, который похож на формат занятия
+            val formatRegex = Regex("""\((.*?)\)""")
+            val format = formatRegex.findAll(fullText)
+                .map { it.groupValues[1] } // Берем содержимое скобок
+                .firstOrNull { it.contains("л.") || it.contains("пр.") || it.contains("экз") || it.contains("подгруппа") }
+                ?: ""
+
+            // Кабинет и Преподаватель лежат в тегах <nobr>
+            // [0] - это обычно кабинет
+            // [1] - это обычно преподаватель, но если занятие у подгруппы то индексы смещаются на +1
+            val nobrTags = element.select("nobr")
+            var nobrIndex = 0
+            if (nobrTags.getOrNull(0)?.text()?.contains("подгруппа") == true) {
+                nobrIndex++
+            }
+
+            cabinet = nobrTags.getOrNull(nobrIndex)?.text() ?: "-"
+            teacher = nobrTags.getOrNull(nobrIndex + 1)?.text() ?: "-"
+
+            resultList.add(
+                Lesson(
+                    date = dateText,
+                    time = time,
+                    name = name,
+                    format = format,
+                    cabinet = cabinet,
+                    teacher = teacher
                 )
-        } else {
-            null
+            )
         }
     }
-}
-
-fun parseHtml(html: String, baseUrl: String): Document {
-    return Jsoup.parse(html, baseUrl)
+    return resultList
 }
 
 fun main(){
@@ -68,9 +89,21 @@ fun main(){
 
     val lessons = extractClasses(doc)
 
-    lessons.forEach { lesson ->
-        println("${lesson.date} ${lesson.name}")
-    }
-    println("\nTotal lessons scraped: ${lessons.size}")
+    if (lessons.isEmpty()) {
+        println("Пар не найдено.")
+    } else {
+        println("Найдено занятий: ${lessons.size}\n")
+        var lastDate = ""
 
+        lessons.forEach { lesson ->
+            if (lesson.date != lastDate) {
+                println("\n========= ${lesson.date} =========")
+                lastDate = lesson.date
+            }
+
+            println("${lesson.time} | ${lesson.name} (${lesson.format})")
+            println("   Аудитория: ${lesson.cabinet}")
+            println("   Преподаватель: ${lesson.teacher}")
+        }
+    }
 }
