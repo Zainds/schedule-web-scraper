@@ -1,7 +1,6 @@
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 
 data class Lesson(
     val date: String,
@@ -22,12 +21,13 @@ fun fetchPage(url: String): String? {
 
     return client.newCall(request).execute().use { response ->
         if (response.isSuccessful) {
-            response.body?.string()
+            response.body.string()
         } else {
             null
         }
     }
 }
+
 fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
     val resultList = mutableListOf<Lesson>()
 
@@ -55,9 +55,9 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
                 .firstOrNull { it.contains("л.") || it.contains("пр.") || it.contains("экз") || it.contains("подгруппа") }
                 ?: ""
 
-            // Кабинет и Преподаватель лежат в тегах <nobr>
-            // [0] - это обычно кабинет
-            // [1] - это обычно преподаватель, но если занятие у подгруппы то индексы смещаются на +1
+            // cabinet и teacher лежат в тегах <nobr>
+            // [0] - это обычно cabinet
+            // [1] - это обычно teacher, но если занятие у подгруппы то индексы смещаются на +1
             val nobrTags = element.select("nobr")
             var nobrIndex = 0
             if (nobrTags.getOrNull(0)?.text()?.contains("подгруппа") == true) {
@@ -66,6 +66,7 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
 
             cabinet = nobrTags.getOrNull(nobrIndex)?.text() ?: "-"
             teacher = nobrTags.getOrNull(nobrIndex + 1)?.text() ?: "-"
+            // TODO: Improve nobr tags extraction & fix cabinet/teacher mismatch
 
             resultList.add(
                 Lesson(
