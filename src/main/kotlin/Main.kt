@@ -1,7 +1,11 @@
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
+import java.io.File
 
+@Serializable
 data class Lesson(
     val date: String,
     val name: String,
@@ -47,7 +51,7 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
             val name = element.selectFirst("strong")?.text() ?: "-"
 
             val fullText = element.text()
-            val time = fullText.slice(0..11)
+            val time = fullText.slice(0..10)
 
             // Формат: ищем текст в скобках (л.), (пр.), (экз.) и т.д.
             // Логика: ищем текст в скобках, который похож на формат занятия
@@ -83,6 +87,20 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
     return resultList
 }
 
+fun writeLessonsJson(lessons: List<Lesson>){
+    val jsonFormat = Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true
+    }
+
+    val jsonString = jsonFormat.encodeToString(lessons)
+
+    val file = File("schedule.json")
+    file.writeText(jsonString)
+
+    println("\nУспешно записано в файл: ${file.absolutePath}")
+}
+
 fun main(){
     val targetUrlIvt52 = "https://www.altstu.ru/m/s/7000021385/"
     val targetUrlIvt21 = "https://www.altstu.ru/m/s/7000019267/"
@@ -107,5 +125,7 @@ fun main(){
             println("   Аудитория: ${lesson.cabinet}")
             println("   Преподаватель: ${lesson.teacher} ${lesson.teacherGrade}")
         }
+
+        writeLessonsJson(lessons)
     }
 }
