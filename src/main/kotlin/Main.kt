@@ -34,8 +34,8 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
     val dayBlocks = doc.select("div.block-index")
 
     for (dayBlock in dayBlocks) {
-        lateinit var cabinet: String
-        lateinit var teacher: String
+        var cabinet = "-"
+        var teacher = "-"
 
         val dateText = dayBlock.selectFirst("h2")?.text()?.slice(0..7) ?: "-"
 
@@ -59,14 +59,11 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
             // [0] - это обычно cabinet
             // [1] - это обычно teacher, но если занятие у подгруппы то индексы смещаются на +1
             val nobrTags = element.select("nobr")
-            var nobrIndex = 0
-            if (nobrTags.getOrNull(0)?.text()?.contains("подгруппа") == true) {
-                nobrIndex++
-            }
 
-            cabinet = nobrTags.getOrNull(nobrIndex)?.text() ?: "-"
-            teacher = nobrTags.getOrNull(nobrIndex + 1)?.text() ?: "-"
-            // TODO: Improve nobr tags extraction & fix cabinet/teacher mismatch
+            for (nobr in nobrTags) {
+                if (nobr.text().count { it == '.' } >= 2) teacher = nobr.text()
+                if (nobr.text().count { it.isDigit() } >= 1) cabinet = nobr.text()
+            }
 
             resultList.add(
                 Lesson(
