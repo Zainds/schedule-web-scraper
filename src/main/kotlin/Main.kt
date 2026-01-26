@@ -37,6 +37,7 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
     for (dayBlock in dayBlocks) {
         var cabinet = "-"
         var teacher = "-"
+        var teacherGrade = ""
 
         val dateText = dayBlock.selectFirst("h2")?.text()?.slice(0..7) ?: "-"
 
@@ -53,7 +54,7 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
             val formatRegex = Regex("""\((.*?)\)""")
             val format = formatRegex.findAll(fullText)
                 .map { it.groupValues[1] } // Берем содержимое скобок
-                .firstOrNull { it.contains("л.") || it.contains("пр.") || it.contains("экз") || it.contains("подгруппа") }
+                .firstOrNull { it.contains("л.") || it.contains("пр.") || it.contains("экз") || it.contains("подгруппа") || it.contains("ф.") }
                 ?: ""
 
             // cabinet и teacher лежат в тегах <nobr>
@@ -64,7 +65,7 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
                 if (nobr.text().count { it.isDigit() } >= 1) cabinet = nobr.text()
             }
 
-            val teacherGrade = fullText.substringAfterLast("- ")
+            if (teacher != "-") teacherGrade = fullText.substringAfterLast("- ")
 
             resultList.add(
                 Lesson(
@@ -83,9 +84,10 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
 }
 
 fun main(){
-    val targetUrl = "https://www.altstu.ru/m/s/7000021385/"
-    val html = fetchPage(targetUrl) ?: error("Failed to fetch page")
-    val doc = Jsoup.parse(html, targetUrl)
+    val targetUrlIvt52 = "https://www.altstu.ru/m/s/7000021385/"
+    val targetUrlIvt21 = "https://www.altstu.ru/m/s/7000019267/"
+    val html = fetchPage(targetUrlIvt21) ?: error("Failed to fetch page")
+    val doc = Jsoup.parse(html, targetUrlIvt21)
 
     val lessons = extractClasses(doc)
 
