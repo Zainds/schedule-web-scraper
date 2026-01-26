@@ -101,11 +101,12 @@ fun writeLessonsJson(lessons: List<Lesson>){
     println("\nУспешно записано в файл: ${file.absolutePath}")
 }
 
-fun main(){
-    val targetUrlIvt52 = "https://www.altstu.ru/m/s/7000021385/"
-    val targetUrlIvt21 = "https://www.altstu.ru/m/s/7000019267/"
-    val html = fetchPage(targetUrlIvt21) ?: error("Failed to fetch page")
-    val doc = Jsoup.parse(html, targetUrlIvt21)
+fun extractGroupClasses(id: String) {
+    val url = "https://www.altstu.ru/m/s/${id}/"
+
+    println("Загружаю данные с $url ...")
+    val html = fetchPage(url) ?: error("Failed to fetch page")
+    val doc = Jsoup.parse(html, url)
 
     val lessons = extractClasses(doc)
 
@@ -127,5 +128,61 @@ fun main(){
         }
 
         writeLessonsJson(lessons)
+    }
+}
+
+fun main(){
+    val groupsFile = File("all_groups_full.json")
+
+    if (!groupsFile.exists()) {
+        println("Файл 'all_groups_full.json' не найден!")
+        println("Сначала запустите GroupGrabber.kt, чтобы загрузить базу групп.")
+        return
+    }
+
+    println("Загрузка базы групп...")
+    val jsonParser = Json { ignoreUnknownKeys = true }
+    val allGroups: List<GroupEntity> = try {
+        jsonParser.decodeFromString(groupsFile.readText())
+    } catch (e: Exception) {
+        println("Ошибка чтения JSON: ${e.message}")
+        return
+    }
+    println("База загружена. Всего групп: ${allGroups.size}")
+
+    while (true) {
+        print("\nВведите название группы (или 'exit'): ")
+        val input = readlnOrNull()?.trim() ?: break
+
+        if (input.lowercase() == "exit") break
+        if (input.length < 2) {
+            println("Введите хотя бы 2 символа.")
+            continue
+        }
+
+        val foundGroups = allGroups.filter {
+            it.name.contains(input, ignoreCase = true)
+        }
+
+        if (foundGroups.isEmpty()) {
+            println("Группы не найдены.")
+        } else {
+            foundGroups.forEachIndexed { index, group ->
+                println("${index + 1}. ${group.name}")
+            }
+
+            print("Выберите номер (1-${foundGroups.size}): ")
+            val choiceStr = readlnOrNull()
+            val choice = choiceStr?.toIntOrNull()
+
+            if (choice != null && choice in 1..foundGroups.size) {
+                val selectedGroup = foundGroups[choice - 1]
+                println("\nВыбрана группа: ${selectedGroup.name}")
+
+                extractGroupClasses(selectedGroup.id)
+            } else {
+                println("Неверный выбор.")
+            }
+        }
     }
 }
