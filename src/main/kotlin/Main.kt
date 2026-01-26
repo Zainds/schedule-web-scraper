@@ -8,6 +8,7 @@ data class Lesson(
     val time: String,
     val cabinet: String,
     val teacher: String,
+    val teacherGrade: String,
     val format: String
 )
 
@@ -56,14 +57,14 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
                 ?: ""
 
             // cabinet и teacher лежат в тегах <nobr>
-            // [0] - это обычно cabinet
-            // [1] - это обычно teacher, но если занятие у подгруппы то индексы смещаются на +1
             val nobrTags = element.select("nobr")
 
             for (nobr in nobrTags) {
                 if (nobr.text().count { it == '.' } >= 2) teacher = nobr.text()
                 if (nobr.text().count { it.isDigit() } >= 1) cabinet = nobr.text()
             }
+
+            val teacherGrade = fullText.substringAfterLast("- ")
 
             resultList.add(
                 Lesson(
@@ -72,7 +73,8 @@ fun extractClasses(doc: org.jsoup.nodes.Document): List<Lesson> {
                     name = name,
                     format = format,
                     cabinet = cabinet,
-                    teacher = teacher
+                    teacher = teacher,
+                    teacherGrade = teacherGrade
                 )
             )
         }
@@ -101,7 +103,7 @@ fun main(){
 
             println("${lesson.time} | ${lesson.name} (${lesson.format})")
             println("   Аудитория: ${lesson.cabinet}")
-            println("   Преподаватель: ${lesson.teacher}")
+            println("   Преподаватель: ${lesson.teacher} ${lesson.teacherGrade}")
         }
     }
 }
