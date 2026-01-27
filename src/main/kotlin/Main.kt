@@ -1,10 +1,7 @@
 import NetworkUtils.fetchPage
 import HtmlParser.parseSchedule
-import Lesson
 import kotlinx.serialization.json.Json
-import org.jsoup.Jsoup
 import java.io.File
-
 
 fun writeLessonsJson(lessons: List<Lesson>){
     val jsonFormat = Json {
@@ -60,7 +57,7 @@ fun main(){
         allGroups = try {
             jsonParser.decodeFromString(groupsFile.readText())
         } catch (e: Exception) {
-            println("Ошибка чтения файла. Пересоздаю базу...")
+            println("Ошибка чтения файла: ${e.message}. Пересоздаю базу...")
             scanAllGroups()
         }
     } else {
