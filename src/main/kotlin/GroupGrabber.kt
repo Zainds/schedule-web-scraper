@@ -1,19 +1,12 @@
+import NetworkUtils.client
 import kotlinx.coroutines.*
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
-@Serializable
-data class ApiGroup(val id: String, val value: String)
 
-@Serializable
-data class GroupEntity(val id: String, val name: String)
-
-val client = OkHttpClient.Builder().build()
 val allGroups = Collections.newSetFromMap(ConcurrentHashMap<GroupEntity, Boolean>())
 val jsonParser = Json { ignoreUnknownKeys = true }
 
@@ -23,7 +16,7 @@ val fullCharset = (0..9).map { it.toString() } +
         ('А'..'Я').map { it.toString() } +
         listOf("-", "(", ")", ".")
 
-fun main() = runBlocking {
+fun scanAllGroups(): List<GroupEntity> = runBlocking {
     println("Запуск парсинга групп...")
     val startTime = System.currentTimeMillis()
 
@@ -42,9 +35,11 @@ fun main() = runBlocking {
     val resultList = allGroups.sortedBy { it.name }
     val jsonString = Json { prettyPrint = true }.encodeToString(resultList)
     File("all_groups_full.json").writeText(jsonString)
+
+    return@runBlocking resultList
 }
 
-suspend fun scanPrefixRecursive(prefix: String) {
+private suspend fun scanPrefixRecursive(prefix: String) {
 
     if (prefix.length > 12) return
 
@@ -73,7 +68,7 @@ suspend fun scanPrefixRecursive(prefix: String) {
             allGroups.add(GroupEntity(g.id, g.value))
         }
 
-        // Если вернулось 8 (максимум), значит, мы нашли не всё
+        // Если вернулось 8 групп (максимум), то мы нашли не всё
         if (groups.size >= 8) {
             coroutineScope {
                 fullCharset.map { char ->
