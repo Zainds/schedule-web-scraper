@@ -1,5 +1,3 @@
-import NetworkUtils.fetchPage
-import HtmlParser.parseSchedule
 import kotlinx.serialization.json.Json
 import java.io.File
 

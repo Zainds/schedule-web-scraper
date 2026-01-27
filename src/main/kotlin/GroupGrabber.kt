@@ -1,4 +1,3 @@
-import NetworkUtils.client
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import okhttp3.Request
