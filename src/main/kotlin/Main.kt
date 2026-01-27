@@ -1,20 +1,6 @@
 import kotlinx.serialization.json.Json
 import java.io.File
 
-fun writeLessonsJson(lessons: List<Lesson>){
-    val jsonFormat = Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true
-    }
-
-    val jsonString = jsonFormat.encodeToString(lessons)
-
-    val file = File("schedule.json")
-    file.writeText(jsonString)
-
-    println("\nУспешно записано в файл: ${file.absolutePath}")
-}
-
 fun extractGroupClasses(id: String) {
     val url = "https://www.altstu.ru/m/s/${id}/"
 
@@ -40,7 +26,7 @@ fun extractGroupClasses(id: String) {
             println("   Преподаватель: ${lesson.teacher} ${lesson.teacherGrade}")
         }
 
-        writeLessonsJson(lessons)
+        writeDataJson(lessons, "schedule.json")
     }
 }
 

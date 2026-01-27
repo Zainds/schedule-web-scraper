@@ -1,7 +1,6 @@
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import okhttp3.Request
-import java.io.File
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
@@ -32,8 +31,7 @@ fun scanAllGroups(): List<GroupEntity> = runBlocking {
     println("Время выполнения: ${(System.currentTimeMillis() - startTime) / 1000} сек.")
 
     val resultList = allGroups.sortedBy { it.name }
-    val jsonString = Json { prettyPrint = true }.encodeToString(resultList)
-    File("all_groups_full.json").writeText(jsonString)
+    writeDataJson(resultList, "all_groups_full.json")
 
     return@runBlocking resultList
 }
