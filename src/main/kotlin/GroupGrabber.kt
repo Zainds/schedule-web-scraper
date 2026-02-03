@@ -1,11 +1,8 @@
 import kotlinx.coroutines.*
-import kotlinx.serialization.json.Json
-import okhttp3.Request
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
 val allGroups = Collections.newSetFromMap(ConcurrentHashMap<GroupEntity, Boolean>())
-val jsonParser = Json { ignoreUnknownKeys = true }
 
 // Пример сложной группы - "5ГМУ(с)-21"
 val fullCharset = (0..9).map { it.toString() } +
@@ -40,23 +37,18 @@ private suspend fun scanPrefixRecursive(prefix: String) {
 
     val url = "https://www.altstu.ru/m/s/ajax/?query=$prefix"
 
-    val request = Request.Builder()
-        .url(url)
-        .header("User-Agent", "Mozilla/5.0")
-        .header("X-Requested-With", "XMLHttpRequest")
-        .build()
-
     try {
         val responseBody = withContext(Dispatchers.IO) {
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) null else response.body.string()
-            }
+            fetchPage(
+                url = url,
+                headers = mapOf("X-Requested-With" to "XMLHttpRequest")
+            )
         } ?: return
 
         if (responseBody.length < 5) return
 
         val groups = try {
-            jsonParser.decodeFromString<List<ApiGroup>>(responseBody)
+            jsonFormat.decodeFromString<List<ApiGroup>>(responseBody)
         } catch (e: Exception) { emptyList() }
 
         groups.forEach { g ->

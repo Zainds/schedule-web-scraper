@@ -11,20 +11,28 @@ val userAgents = listOf(
     "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36>"
 )
 
-fun randomUserAgent(): String = userAgents.random()
+private fun randomUserAgent(): String = userAgents.random()
 
-fun fetchPage(url: String): String? {
-
-    val request = Request.Builder()
+fun fetchPage(url: String, headers: Map<String, String> = emptyMap() ): String? {
+    val builder = Request.Builder()
         .url(url)
         .header("User-Agent", randomUserAgent())
-        .build()
 
-    return client.newCall(request).execute().use { response ->
-        if (response.isSuccessful) {
-            response.body.string()
-        } else {
-            null
+    headers.forEach { (key, value) ->
+        builder.header(key, value)
+    }
+
+    val request = builder.build()
+
+    return try {
+        client.newCall(request).execute().use { response ->
+            if (response.isSuccessful) {
+                response.body.string()
+            } else {
+                null
+            }
         }
+    } catch (e: Exception) {
+        null
     }
 }

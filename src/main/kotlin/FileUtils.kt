@@ -1,12 +1,12 @@
 import kotlinx.serialization.json.Json
 import java.io.File
 
-inline fun <reified T>  writeDataJson(data: List<T>, fileName: String) {
-    val jsonFormat = Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true
-    }
+val jsonFormat = Json {
+    prettyPrint = true
+    ignoreUnknownKeys = true
+}
 
+inline fun <reified T>  writeDataJson(data: List<T>, fileName: String) {
     try {
         val jsonString = jsonFormat.encodeToString(data)
 

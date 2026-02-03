@@ -1,4 +1,3 @@
-import kotlinx.serialization.json.Json
 import java.io.File
 
 fun extractGroupClasses(id: String) {
@@ -9,7 +8,9 @@ fun extractGroupClasses(id: String) {
     val lessons = parseSchedule(html, url)
 
     lessons.print()
-    if (lessons.isNotEmpty()) writeDataJson(lessons, "schedule.json")
+    if ( lessons.isNotEmpty() ) {
+        writeDataJson(lessons, "schedule.json")
+    }
 }
 
 fun main(){
@@ -19,9 +20,8 @@ fun main(){
 
     if (groupsFile.exists()) {
         println("Загрузка локальной базы групп...")
-        val jsonParser = Json { ignoreUnknownKeys = true }
         allGroups = try {
-            jsonParser.decodeFromString(groupsFile.readText())
+            jsonFormat.decodeFromString(groupsFile.readText())
         } catch (e: Exception) {
             println("Ошибка чтения файла: ${e.message}. Пересоздаю базу...")
             scanAllGroups()
