@@ -4,11 +4,9 @@ import okhttp3.Request
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
-
 val allGroups = Collections.newSetFromMap(ConcurrentHashMap<GroupEntity, Boolean>())
 val jsonParser = Json { ignoreUnknownKeys = true }
 
-// ПОЛНЫЙ набор символов
 // Пример сложной группы - "5ГМУ(с)-21"
 val fullCharset = (0..9).map { it.toString() } +
         ('А'..'Я').map { it.toString() } +
@@ -65,7 +63,7 @@ private suspend fun scanPrefixRecursive(prefix: String) {
             allGroups.add(GroupEntity(g.id, g.value))
         }
 
-        // Если вернулось 8 групп (максимум), то мы нашли не всё
+        // Если вернулось 8 групп, значит есть еще
         if (groups.size >= 8) {
             coroutineScope {
                 fullCharset.map { char ->

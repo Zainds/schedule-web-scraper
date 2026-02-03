@@ -20,7 +20,6 @@ dependencies {
     // Kotlin coroutines for parallel scraping
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
-    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.10.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
     testImplementation(kotlin("test"))
 }

@@ -18,3 +18,23 @@ inline fun <reified T>  writeDataJson(data: List<T>, fileName: String) {
         println("\nОшибка записи файла $fileName: ${e.message}")
     }
 }
+
+fun List<Lesson>.print(){
+    if (this.isEmpty()) {
+        println("Пар не найдено.")
+    } else {
+        println("Найдено занятий: ${this.size}\n")
+        var lastDate = ""
+
+        this.forEach { lesson ->
+            if (lesson.date != lastDate) {
+                println("\n========= ${lesson.date} =========")
+                lastDate = lesson.date
+            }
+
+            println("${lesson.time} | ${lesson.name} (${lesson.format})")
+            println("   Аудитория: ${lesson.cabinet}")
+            println("   Преподаватель: ${lesson.teacher} ${lesson.teacherGrade}")
+        }
+    }
+}

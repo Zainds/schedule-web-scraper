@@ -6,28 +6,10 @@ fun extractGroupClasses(id: String) {
 
     println("Загружаю данные с $url ...")
     val html = fetchPage(url) ?: error("Failed to fetch page")
-
     val lessons = parseSchedule(html, url)
 
-    if (lessons.isEmpty()) {
-        println("Пар не найдено.")
-    } else {
-        println("Найдено занятий: ${lessons.size}\n")
-        var lastDate = ""
-
-        lessons.forEach { lesson ->
-            if (lesson.date != lastDate) {
-                println("\n========= ${lesson.date} =========")
-                lastDate = lesson.date
-            }
-
-            println("${lesson.time} | ${lesson.name} (${lesson.format})")
-            println("   Аудитория: ${lesson.cabinet}")
-            println("   Преподаватель: ${lesson.teacher} ${lesson.teacherGrade}")
-        }
-
-        writeDataJson(lessons, "schedule.json")
-    }
+    lessons.print()
+    if (lessons.isNotEmpty()) writeDataJson(lessons, "schedule.json")
 }
 
 fun main(){
