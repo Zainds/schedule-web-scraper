@@ -41,7 +41,11 @@ private suspend fun scanPrefixRecursive(prefix: String) {
         val responseBody = withContext(Dispatchers.IO) {
             fetchPage(
                 url = url,
-                headers = mapOf("X-Requested-With" to "XMLHttpRequest")
+                headers = mapOf(
+                    "X-Requested-With" to "XMLHttpRequest",
+                    "Referer" to "https://www.altstu.ru/m/s/",
+                    "Accept" to "application/json, text/javascript, */*; q=0.01",
+                    "Accept-Language" to "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7")
             )
         } ?: return
 
