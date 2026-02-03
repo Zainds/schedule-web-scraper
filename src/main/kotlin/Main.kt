@@ -14,7 +14,7 @@ fun extractGroupClasses(id: String) {
 }
 
 fun main(){
-    val groupsFile = File("all_groups_full.json")
+    val groupsFile = File("all_groups.json")
 
     val allGroups: List<GroupEntity>
 

@@ -13,7 +13,6 @@ fun scanAllGroups(): List<GroupEntity> = runBlocking {
     val startTime = System.currentTimeMillis()
 
     supervisorScope {
-        // Стартуем со всех возможных символов
         fullCharset.map { char ->
             async(Dispatchers.IO) {
                 scanPrefixRecursive(char)
@@ -25,7 +24,7 @@ fun scanAllGroups(): List<GroupEntity> = runBlocking {
     println("Время выполнения: ${(System.currentTimeMillis() - startTime) / 1000} сек.")
 
     val resultList = allGroups.sortedBy { it.name }
-    writeDataJson(resultList, "all_groups_full.json")
+    writeDataJson(resultList, "all_groups.json")
 
     return@runBlocking resultList
 }
